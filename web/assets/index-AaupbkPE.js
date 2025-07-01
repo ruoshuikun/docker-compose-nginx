@@ -1,0 +1,1 @@
+import{i as r}from"./index-B0pCpdg4.js";import{r as o,c as l,o as n,f as c,l as t,D as f}from"./index-ChCbqBtc.js";const p={class:"flex flex-col flex-1 app-container"},d={__name:"index",setup(i){const e=o("http://localhost:8081/datasets");return(u,s)=>(n(),l("div",p,[c(t(r),{src:t(e),"onUpdate:src":s[0]||(s[0]=a=>f(e)?e.value=a:null)},null,8,["src"])]))}};export{d as default};
