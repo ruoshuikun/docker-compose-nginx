@@ -104,6 +104,7 @@ show_help() {
     echo "  list               列出所有项目"
     echo "  remove <项目名>    删除项目"
     echo "  backup <项目名>    备份项目"
+    echo "  shared             管理共享静态资源"
     echo ""
     echo "配置管理:"
     echo "  reload             重新加载 nginx 配置"
@@ -119,6 +120,7 @@ show_help() {
     echo "  $0 deploy web /path/to/dist     # 部署 web 项目"
     echo "  $0 deploy admin /path/to/admin  # 部署 admin 项目"
     echo "  $0 list                         # 查看所有项目"
+    echo "  $0 shared upload /path/to/tiles tiles  # 上传地图瓦片"
     echo "  $0 status                       # 查看服务状态"
 }
 
@@ -126,6 +128,9 @@ show_help() {
 setup_directories() {
     print_step "创建项目目录..."
     mkdir -p nginx/{conf.d,html,logs,ssl,static} $BACKUP_DIR
+    
+    # 创建共享资源目录
+    mkdir -p nginx/html/shared/{maps,tiles,images,fonts,icons,libs}
     
     # 设置环境变量
     if [[ ! -f .env ]]; then
@@ -293,6 +298,140 @@ backup_project() {
     print_info "项目备份完成: $backup_path"
 }
 
+# 管理共享静态资源
+manage_shared_resources() {
+    local action="$1"
+    local shared_dir="$HTML_DIR/shared"
+    
+    case "$action" in
+        "list"|"ls")
+            print_step "共享静态资源目录结构："
+            if [[ -d "$shared_dir" ]]; then
+                tree "$shared_dir" 2>/dev/null || find "$shared_dir" -type f | sort
+            else
+                print_warn "共享资源目录不存在"
+            fi
+            ;;
+        "info")
+            print_step "共享资源信息："
+            if [[ -d "$shared_dir" ]]; then
+                echo "  位置: $shared_dir"
+                echo "  访问: http://localhost/shared/"
+                echo "  大小: $(du -sh "$shared_dir" 2>/dev/null | cut -f1)"
+                echo "  文件数: $(find "$shared_dir" -type f 2>/dev/null | wc -l)"
+                echo ""
+                echo "  子目录："
+                echo "    /shared/maps/     - 地图相关文件"
+                echo "    /shared/tiles/    - 地图瓦片"
+                echo "    /shared/images/   - 通用图片"
+                echo "    /shared/fonts/    - 字体文件"
+                echo "    /shared/icons/    - 图标文件"
+                echo "    /shared/libs/     - 共享JS库"
+            else
+                print_warn "共享资源目录不存在"
+            fi
+            ;;
+        "create"|"init")
+            print_step "初始化共享资源目录..."
+            mkdir -p "$shared_dir"/{maps,tiles,images,fonts,icons,libs}
+            
+            # 创建说明文件
+            cat > "$shared_dir/README.md" << 'EOF'
+# 共享静态资源目录
+
+该目录用于存放所有项目都可能用到的静态资源。
+
+## 目录结构
+
+- `maps/` - 地图相关文件
+- `tiles/` - 地图瓦片 (如：{z}/{x}/{y}.png)
+- `images/` - 通用图片资源
+- `fonts/` - 字体文件
+- `icons/` - 图标文件
+- `libs/` - 共享JavaScript库
+
+## 访问方式
+
+所有资源都可以通过 `/shared/` 路径访问：
+
+```
+http://域名/shared/maps/world.json
+http://域名/shared/tiles/0/0/0.png
+http://域名/shared/images/logo.png
+http://域名/shared/fonts/custom.woff2
+```
+
+## 使用示例
+
+### 地图瓦片
+```javascript
+const tileUrl = '/shared/tiles/{z}/{x}/{y}.png';
+```
+
+### 共享图片
+```html
+<img src="/shared/images/common-logo.png" alt="Logo">
+```
+
+### 字体文件
+```css
+@font-face {
+    font-family: 'CustomFont';
+    src: url('/shared/fonts/custom.woff2') format('woff2');
+}
+```
+EOF
+            
+            print_success "共享资源目录初始化完成"
+            print_info "访问地址: http://localhost/shared/"
+            ;;
+        "upload")
+            local source_dir="$2"
+            local target_subdir="$3"
+            
+            if [[ -z "$source_dir" ]]; then
+                print_error "请指定源目录"
+                echo "使用方法: $0 shared upload <源目录> [目标子目录]"
+                echo "示例: $0 shared upload /path/to/tiles tiles"
+                return 1
+            fi
+            
+            if [[ ! -d "$source_dir" ]]; then
+                print_error "源目录不存在: $source_dir"
+                return 1
+            fi
+            
+            local target_dir="$shared_dir"
+            if [[ -n "$target_subdir" ]]; then
+                target_dir="$shared_dir/$target_subdir"
+                mkdir -p "$target_dir"
+            fi
+            
+            print_step "上传共享资源..."
+            cp -r "$source_dir"/* "$target_dir/"
+            chmod -R 755 "$target_dir"
+            
+            print_success "共享资源上传完成"
+            print_info "目标位置: $target_dir"
+            ;;
+        *)
+            print_error "未知操作: $action"
+            echo ""
+            echo "共享资源管理命令:"
+            echo "  shared list        - 列出共享资源"
+            echo "  shared info        - 显示共享资源信息"
+            echo "  shared create      - 初始化共享资源目录"
+            echo "  shared upload <源目录> [子目录] - 上传资源"
+            echo ""
+            echo "示例:"
+            echo "  $0 shared create"
+            echo "  $0 shared upload /path/to/tiles tiles"
+            echo "  $0 shared upload /path/to/maps maps"
+            echo "  $0 shared list"
+            ;;
+    esac
+}
+
 # 重新加载配置
 reload_config() {
     print_step "重新加载 nginx 配置..."
@@ -417,6 +556,9 @@ main() {
             ;;
         "backup")
             backup_project "$2"
+            ;;
+        "shared")
+            manage_shared_resources "$2" "$3" "$4"
             ;;
         "reload")
             reload_config
