@@ -22,6 +22,10 @@ nginx/html/*
 nginx/static/*
 !nginx/static/.gitkeep
 
+# backup证书文件（敏感信息）
+nginx/backup/*
+!nginx/backup/.gitkeep
+
 # Docker相关
 .dockerignore
 docker-compose.override.yml.local
