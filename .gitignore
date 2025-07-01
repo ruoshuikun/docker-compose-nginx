@@ -22,9 +22,9 @@ nginx/html/*
 nginx/static/*
 !nginx/static/.gitkeep
 
-# backup（备份的项目文件）
-nginx/backup/*
-!nginx/backup/.gitkeep
+# 备份文件（保留目录结构，但忽略备份内容）
+backup/*
+!backup/.gitkeep
 
 # Docker相关
 .dockerignore
@@ -51,7 +51,7 @@ Thumbs.db
 
 # 备份文件
 *.bak
-# *.backup
+*.backup
 *.old
 
 # 压缩文件
