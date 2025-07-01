@@ -1,0 +1,23 @@
+# 开发环境配置覆盖
+# 使用方式：docker-compose -f docker-compose.yml -f docker-compose.override.yml up -d
+
+version: '3.8'
+
+services:
+  nginx:
+    # 开发环境使用本地端口
+    ports:
+      - "8080:80"
+    # 开发环境启用调试日志
+    environment:
+      - NGINX_LOG_LEVEL=debug
+    # 开发环境挂载配置文件为可写
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./nginx/conf.d:/etc/nginx/conf.d
+      - ./nginx/html:/usr/share/nginx/html
+      - ./nginx/static:/usr/share/nginx/static
+      - ./nginx/logs:/var/log/nginx
+    # 开发环境禁用健康检查
+    healthcheck:
+      disable: true 
