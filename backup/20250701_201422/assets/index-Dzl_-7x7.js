@@ -1,1 +1,0 @@
-import{_ as e,B as s,r as t,c as o,o as a}from"./index-ChCbqBtc.js";const c={class:"app-container home"},n=s({name:"Index"}),_=Object.assign(n,{setup(r){return t("3.8.9"),(p,d)=>(a(),o("div",c,"首页"))}}),f=e(_,[["__scopeId","data-v-e61c0359"]]);export{f as default};

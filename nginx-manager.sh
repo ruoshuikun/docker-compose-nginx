@@ -17,7 +17,7 @@ CYAN='\033[0;36m'
 NC='\033[0m'
 
 # 项目信息
-PROJECT_NAME="nginx-template"
+PROJECT_NAME="nginx-project-manager"
 VERSION="2.0"
 HTML_DIR="nginx/html"
 BACKUP_DIR="backup"

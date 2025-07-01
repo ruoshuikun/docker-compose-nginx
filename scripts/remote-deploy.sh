@@ -46,7 +46,7 @@ SERVER_IP="$1"
 USERNAME="$2"
 PROJECT_NAME="$3"
 SOURCE_DIR="$4"
-REMOTE_DIR="/opt/nginx-template"
+REMOTE_DIR="/opt/nginx-project-manager"
 
 # 检查源目录（如果提供了项目参数）
 if [[ -n "$PROJECT_NAME" && -n "$SOURCE_DIR" ]]; then

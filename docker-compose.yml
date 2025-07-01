@@ -3,7 +3,7 @@ version: '3.8'
 services:
   nginx:
     image: nginx:alpine
-    container_name: ${NGINX_CONTAINER_NAME:-nginx-server}
+    container_name: ${NGINX_CONTAINER_NAME:-nginx-project-manager}
     restart: unless-stopped
     ports:
       - "${NGINX_PORT:-80}:80"

@@ -1,342 +1,376 @@
-# 通用 Nginx Docker Compose 配置
+# Nginx 多项目管理解决方案
 
-这是一个通用的 Nginx Docker Compose 配置模板，支持多种使用场景，方便在不同项目中复用。
+[![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?style=flat&logo=docker&logoColor=white)](https://www.docker.com/)
+[![Nginx](https://img.shields.io/badge/nginx-%23009639.svg?style=flat&logo=nginx&logoColor=white)](https://nginx.org/)
+[![CentOS](https://img.shields.io/badge/CentOS-262577?style=flat&logo=centos&logoColor=white)](https://www.centos.org/)
+[![Ubuntu](https://img.shields.io/badge/Ubuntu-E95420?style=flat&logo=ubuntu&logoColor=white)](https://ubuntu.com/)
 
-## 目录结构
+> 基于 Docker Compose 的 Nginx 多项目管理解决方案，支持多前端项目部署、共享静态资源管理和远程自动化部署。
+
+## 🚀 项目特色
+
+- **🏗️ 多项目支持** - 在同一服务器上部署多个前端项目，项目间完全隔离
+- **📦 共享资源管理** - 统一管理地图瓦片、通用图片、字体等静态资源
+- **🌐 远程一键部署** - 自动化部署到 CentOS/Ubuntu 服务器
+- **🔧 可视化管理** - 提供命令行工具进行项目生命周期管理
+- **🔒 安全优化** - 内置安全头配置和性能优化
+- **📊 健康监控** - 内置健康检查和日志管理
+- **🔄 版本控制** - 自动备份和版本回滚支持
+
+## 📁 项目结构
 
 ```
-nginx/
-├── docker-compose.yml          # Docker Compose 配置文件
-├── docker-compose.override.yml # 开发环境覆盖配置
-├── env.example                 # 环境变量示例文件
-├── README.md                   # 详细说明文档
+nginx-project-manager/
+├── nginx-manager.sh           # 🎛️ 主管理脚本
+├── docker-compose.yml         # 🐳 Docker Compose 配置
+├── docker-compose.override.yml# 🛠️ 开发环境配置
+├── env.example               # ⚙️ 环境变量模板
+├── .gitignore               # 📝 Git 忽略配置
 ├── scripts/
-│   ├── start.sh               # 启动脚本
-│   └── stop.sh                # 停止脚本
-└── nginx/
-    ├── nginx.conf             # Nginx 主配置文件
-    ├── conf.d/                # 站点配置文件目录
-    │   ├── default.conf       # 默认站点配置
-    │   └── ssl.conf           # SSL 配置模板
-    ├── html/                  # 网站文件目录
-    ├── static/                # 静态资源目录
-    ├── ssl/                   # SSL 证书目录
-    └── logs/                  # 日志文件目录
+│   └── remote-deploy.sh     # 🌐 远程部署脚本
+├── nginx/
+│   ├── nginx.conf           # 📋 Nginx 主配置
+│   ├── conf.d/              # 📂 站点配置目录
+│   │   ├── default.conf     # 🏠 默认站点配置
+│   │   └── ssl.conf         # 🔐 SSL 配置模板
+│   ├── html/                # 🌍 多项目网站目录
+│   │   ├── shared/          # 📦 共享静态资源
+│   │   │   ├── maps/        # 🗺️ 地图数据
+│   │   │   ├── tiles/       # 🧩 地图瓦片
+│   │   │   ├── images/      # 🖼️ 通用图片
+│   │   │   ├── fonts/       # 🔤 字体文件
+│   │   │   └── libs/        # 📚 共享JS库
+│   │   ├── web/             # 💻 Web项目
+│   │   ├── admin/           # 👨‍💼 管理后台
+│   │   └── mobile/          # 📱 移动端项目
+│   ├── ssl/                 # 🔐 SSL证书目录
+│   └── logs/                # 📊 日志文件目录
+├── backup/                  # 💾 项目备份目录
+└── docs/                    # 📚 文档目录
+    ├── 部署方式总览.md       # 📖 部署指南总览
+    ├── nginx配置修改操作指南.md # 🔧 配置修改指南
+    ├── 快速开始指南.md       # ⚡ 快速入门文档
+    ├── 项目架构优化方案.md   # 🏗️ 架构优化方案
+    ├── DEPLOYMENT.md        # 🚀 详细部署文档
+    ├── GIT_USAGE.md         # 📝 Git使用说明
+    └── blog-gitkeep.md      # 📄 .gitkeep技术博客
 ```
 
-## 快速开始
+## ⚡ 快速开始
 
-### 1. 复制配置到新项目
+### 1. 克隆项目
 
 ```bash
-# 复制整个目录到新项目
-cp -r nginx/ your-project/
-cd your-project/
+git clone <repository-url> nginx-project-manager
+cd nginx-project-manager
 ```
 
-### 2. 配置环境变量
+### 2. 配置环境
 
 ```bash
-# 复制环境变量示例文件
+# 复制环境变量文件
 cp env.example .env
 
-# 编辑环境变量
+# 编辑配置（可选）
 vim .env
 ```
 
 ### 3. 启动服务
 
 ```bash
-# 方式一：使用启动脚本（推荐）
-./scripts/start.sh
-
-# 方式二：直接使用 docker-compose
-docker-compose up -d
-
-# 查看日志
-docker-compose logs -f nginx
-
-# 停止服务
-./scripts/stop.sh
-# 或者
-docker-compose down
+# 启动基础服务
+./nginx-manager.sh start
 ```
 
-## 环境变量配置
+### 4. 部署第一个项目
+
+```bash
+# 部署前端项目
+./nginx-manager.sh deploy web /path/to/your/dist
+
+# 访问项目
+curl http://localhost/web/
+```
+
+## 🎛️ 管理命令
+
+### 基础服务管理
+
+```bash
+./nginx-manager.sh start      # 启动服务
+./nginx-manager.sh stop       # 停止服务
+./nginx-manager.sh restart    # 重启服务
+./nginx-manager.sh status     # 查看状态
+./nginx-manager.sh logs       # 查看日志
+./nginx-manager.sh health     # 健康检查
+```
+
+### 项目管理
+
+```bash
+./nginx-manager.sh deploy <项目名> <源目录>  # 部署项目
+./nginx-manager.sh list                     # 列出所有项目
+./nginx-manager.sh remove <项目名>          # 删除项目
+./nginx-manager.sh backup <项目名>          # 备份项目
+```
+
+### 共享资源管理
+
+```bash
+./nginx-manager.sh shared create                    # 初始化共享资源
+./nginx-manager.sh shared upload <源目录> <类型>    # 上传资源
+./nginx-manager.sh shared list                      # 列出资源
+./nginx-manager.sh shared info                      # 资源信息
+```
+
+### 配置管理
+
+```bash
+./nginx-manager.sh reload     # 重新加载配置
+./nginx-manager.sh test       # 测试配置
+./nginx-manager.sh edit       # 编辑配置
+./nginx-manager.sh clean      # 清理系统
+```
+
+## 🌐 远程部署
+
+### 部署到服务器
+
+```bash
+# 仅部署框架
+./scripts/remote-deploy.sh <服务器IP> <用户名>
+
+# 部署框架+项目
+./scripts/remote-deploy.sh <服务器IP> <用户名> <项目名> <源目录>
+```
+
+### 示例
+
+```bash
+# 部署到 CentOS 服务器
+./scripts/remote-deploy.sh 192.168.1.100 root
+
+# 部署 web 项目到 Ubuntu 服务器
+./scripts/remote-deploy.sh example.com ubuntu web /path/to/dist
+```
+
+## 📋 使用场景
+
+### 1. 单项目部署
+
+```bash
+# 部署个人博客
+./nginx-manager.sh deploy blog /path/to/blog-dist
+# 访问: http://localhost/blog/
+```
+
+### 2. 多项目部署
+
+```bash
+# 部署主应用
+./nginx-manager.sh deploy web /path/to/web-dist
+
+# 部署管理后台
+./nginx-manager.sh deploy admin /path/to/admin-dist
+
+# 部署移动端
+./nginx-manager.sh deploy mobile /path/to/mobile-dist
+
+# 访问地址:
+# http://localhost/web/     - 主应用
+# http://localhost/admin/   - 管理后台  
+# http://localhost/mobile/  - 移动端
+```
+
+### 3. 地图应用部署
+
+```bash
+# 上传地图瓦片
+./nginx-manager.sh shared upload /path/to/tiles tiles
+
+# 上传地图数据
+./nginx-manager.sh shared upload /path/to/maps maps
+
+# 部署地图应用
+./nginx-manager.sh deploy map-app /path/to/map-dist
+
+# 在应用中使用:
+# http://localhost/shared/tiles/{z}/{x}/{y}.png
+# http://localhost/shared/maps/world.geojson
+```
+
+### 4. 企业级部署
+
+```bash
+# 远程部署到生产服务器
+./scripts/remote-deploy.sh prod-server.com root
+
+# 部署各个子系统
+ssh root@prod-server.com 'cd /opt/nginx-project-manager && ./nginx-manager.sh deploy portal /tmp/portal-dist'
+ssh root@prod-server.com 'cd /opt/nginx-project-manager && ./nginx-manager.sh deploy crm /tmp/crm-dist'
+ssh root@prod-server.com 'cd /opt/nginx-project-manager && ./nginx-manager.sh deploy oa /tmp/oa-dist'
+```
+
+## 🔧 配置说明
+
+### 环境变量配置
 
 | 变量名 | 默认值 | 说明 |
 |--------|--------|------|
-| `NGINX_CONTAINER_NAME` | `nginx-server` | 容器名称 |
+| `NGINX_CONTAINER_NAME` | `nginx-project-manager` | 容器名称 |
 | `NGINX_PORT` | `80` | HTTP 端口 |
 | `NGINX_SSL_PORT` | `443` | HTTPS 端口 |
 | `NGINX_HOST` | `localhost` | 服务器名称 |
-| `SITE_NAME` | `my-website` | 网站名称 |
+| `SITE_NAME` | `nginx-project-manager` | 网站名称 |
 | `SITE_DOMAIN` | `example.com` | 域名 |
 
-## 功能特性
+### Nginx 配置特性
 
-### 1. 基础功能
-- ✅ 静态文件服务
-- ✅ 目录浏览
-- ✅ Gzip 压缩
-- ✅ 缓存控制
-- ✅ 健康检查
-- ✅ 错误页面
+- ✅ **Gzip 压缩** - 自动压缩静态资源
+- ✅ **缓存控制** - 智能缓存策略
+- ✅ **安全头** - XSS、CSRF、点击劫持防护
+- ✅ **健康检查** - `/health` 端点监控
+- ✅ **错误页面** - 自定义错误页面
+- ✅ **SSL 支持** - HTTPS 配置模板
 
-### 2. 安全特性
-- ✅ 安全头设置
-- ✅ XSS 防护
-- ✅ 点击劫持防护
-- ✅ 内容类型嗅探防护
+## 🌍 访问路径
 
-### 3. 性能优化
-- ✅ 静态资源缓存
-- ✅ 连接优化
-- ✅ 文件传输优化
+| 资源类型 | 访问路径 | 示例 |
+|---------|---------|------|
+| 默认页面 | `http://domain/` | `http://localhost/` |
+| 项目访问 | `http://domain/<项目名>/` | `http://localhost/web/` |
+| 共享资源 | `http://domain/shared/<类型>/` | `http://localhost/shared/tiles/` |
+| 健康检查 | `http://domain/health` | `http://localhost/health` |
 
-### 4. 便捷工具
-- ✅ 一键启动/停止脚本
-- ✅ 环境变量配置
-- ✅ 多环境支持（开发/生产）
-- ✅ 健康检查监控
-
-## 使用场景
-
-### 1. 静态网站托管
-
-```bash
-# 将网站文件放入 html 目录
-cp -r your-website/* nginx/html/
-
-# 启动服务
-docker-compose up -d
-```
-
-### 2. 静态资源服务
-
-```bash
-# 将静态资源放入 static 目录
-cp -r your-assets/* nginx/static/
-
-# 访问地址：http://localhost/static/
-```
-
-### 3. API 代理
-
-编辑 `nginx/conf.d/default.conf`，配置 API 代理：
-
-```nginx
-location /api/ {
-    proxy_pass http://your-backend:8080/;
-    proxy_set_header Host $host;
-    proxy_set_header X-Real-IP $remote_addr;
-    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-    proxy_set_header X-Forwarded-Proto $scheme;
-}
-```
-
-### 4. HTTPS 配置
-
-1. 将 SSL 证书放入 `nginx/ssl/` 目录
-2. 编辑 `nginx/conf.d/ssl.conf`，取消注释并配置证书路径
-3. 重启服务
-
-## 常用命令
-
-### 基础操作
-```bash
-# 启动服务
-./scripts/start.sh
-# 或者
-docker-compose up -d
-
-# 停止服务
-./scripts/stop.sh
-# 或者
-docker-compose down
-
-# 重启服务
-docker-compose restart
-
-# 查看服务状态
-docker-compose ps
-
-# 查看日志
-docker-compose logs -f nginx
-```
-
-### 容器操作
-```bash
-# 进入容器
-docker-compose exec nginx sh
-
-# 重新加载配置
-docker-compose exec nginx nginx -s reload
-
-# 测试配置
-docker-compose exec nginx nginx -t
-
-# 查看容器资源使用
-docker-compose exec nginx top
-```
-
-### 开发环境
-```bash
-# 使用开发环境配置
-docker-compose -f docker-compose.yml -f docker-compose.override.yml up -d
-
-# 清理容器和网络
-./scripts/stop.sh --clean
-```
-
-## 监控和日志
+## 📊 监控和维护
 
 ### 健康检查
-访问 `http://localhost/health` 检查服务状态
 
-### 日志查看
 ```bash
-# 查看访问日志
-docker-compose exec nginx tail -f /var/log/nginx/access.log
+# 执行健康检查
+./nginx-manager.sh health
 
-# 查看错误日志
-docker-compose exec nginx tail -f /var/log/nginx/error.log
-
-# 查看实时日志
-docker-compose logs -f nginx
+# 查看服务状态
+./nginx-manager.sh status
 
 # 查看最近日志
-docker-compose logs --tail=50 nginx
+./nginx-manager.sh logs 50
 ```
 
 ### 性能监控
+
 ```bash
-# 查看容器资源使用情况
-docker stats nginx-server
+# 查看容器资源使用
+docker stats nginx-project-manager
 
-# 查看nginx进程状态
-docker-compose exec nginx ps aux
+# 查看磁盘使用
+df -h
 
-# 查看连接数
-docker-compose exec nginx netstat -an | grep :80
-```
-
-## 故障排除
-
-### 1. 端口冲突
-修改 `.env` 文件中的端口配置：
-```
-NGINX_PORT=8080
-```
-
-### 2. 权限问题
-确保目录权限正确：
-```bash
-chmod -R 755 nginx/html/
-chmod -R 755 nginx/static/
-chmod +x scripts/*.sh
-```
-
-### 3. 配置错误
-测试配置文件：
-```bash
-docker-compose exec nginx nginx -t
-```
-
-### 4. 容器启动失败
-```bash
-# 查看详细错误信息
-docker-compose logs nginx
-
-# 检查端口占用
+# 查看网络连接
 netstat -tlnp | grep :80
-
-# 重新构建并启动
-docker-compose down
-docker-compose up --build -d
 ```
 
-### 5. 脚本执行权限
+### 日志管理
+
 ```bash
-# 确保脚本有执行权限
-chmod +x scripts/start.sh scripts/stop.sh
+# 查看访问日志
+docker exec nginx-project-manager tail -f /var/log/nginx/access.log
+
+# 查看错误日志
+docker exec nginx-project-manager tail -f /var/log/nginx/error.log
+
+# 日志清理
+./nginx-manager.sh clean
 ```
 
-## 扩展配置
+## 🔒 安全建议
 
-### 添加新的站点配置
+1. **定期更新** - 定期更新 Docker 镜像和系统包
+2. **防火墙配置** - 只开放必要的端口（80, 443）
+3. **SSL 证书** - 生产环境使用有效的 SSL 证书
+4. **访问控制** - 配置适当的访问控制规则
+5. **日志监控** - 定期检查和分析日志文件
+6. **备份策略** - 定期备份重要数据和配置
 
-1. 在 `nginx/conf.d/` 目录下创建新的 `.conf` 文件
-2. 配置新的 server 块
-3. 重启服务
+## 🚀 性能优化
 
-### 自定义 Nginx 配置
+1. **启用 Gzip** - 已默认启用，可压缩 60-80% 的文件大小
+2. **静态资源缓存** - 设置合理的缓存过期时间
+3. **CDN 集成** - 配置 CDN 加速静态资源访问
+4. **负载均衡** - 多实例部署时配置负载均衡
+5. **HTTP/2** - 启用 HTTP/2 协议提升性能
 
-编辑 `nginx/nginx.conf` 文件，添加自定义配置。
+## 📚 文档索引
 
-### 多站点配置示例
+- [部署方式总览](docs/部署方式总览.md) - 详细的部署方式说明
+- [快速开始指南](docs/快速开始指南.md) - 项目快速入门文档
+- [配置修改指南](docs/nginx配置修改操作指南.md) - Nginx配置修改操作说明
+- [架构优化方案](docs/项目架构优化方案.md) - 项目架构优化建议
+- [详细部署指南](docs/DEPLOYMENT.md) - CentOS/Ubuntu 服务器部署
+- [Git 使用指南](docs/GIT_USAGE.md) - 版本控制最佳实践
+- [.gitkeep 技术博客](docs/blog-gitkeep.md) - Git 空目录管理技术
 
-创建 `nginx/conf.d/site1.conf`：
-```nginx
-server {
-    listen 80;
-    server_name site1.example.com;
-    root /usr/share/nginx/html/site1;
-    index index.html;
-    
-    location / {
-        try_files $uri $uri/ /index.html;
-    }
-}
-```
+## 🔧 故障排除
 
-### 负载均衡配置示例
+### 常见问题
 
-创建 `nginx/conf.d/load-balancer.conf`：
-```nginx
-upstream backend {
-    server backend1:8080;
-    server backend2:8080;
-    server backend3:8080;
-}
+1. **端口冲突**
+   ```bash
+   # 修改端口配置
+   echo "NGINX_PORT=8080" >> .env
+   ./nginx-manager.sh restart
+   ```
 
-server {
-    listen 80;
-    server_name api.example.com;
-    
-    location / {
-        proxy_pass http://backend;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-    }
-}
-```
+2. **容器启动失败**
+   ```bash
+   # 查看详细错误
+   ./nginx-manager.sh logs
+   
+   # 清理并重启
+   ./nginx-manager.sh clean
+   ./nginx-manager.sh start
+   ```
 
-## 最佳实践
+3. **项目访问 404**
+   ```bash
+   # 检查项目列表
+   ./nginx-manager.sh list
+   
+   # 测试配置
+   ./nginx-manager.sh test
+   ```
 
-### 1. 环境管理
-- 使用 `.env` 文件管理环境变量
-- 不同环境使用不同的配置文件
-- 敏感信息不要提交到版本控制
+4. **远程部署失败**
+   ```bash
+   # 检查 SSH 连接
+   ssh user@server 'echo "连接正常"'
+   
+   # 检查服务器环境
+   ssh user@server 'docker --version && docker-compose --version'
+   ```
 
-### 2. 安全配置
-- 定期更新 nginx 镜像
-- 配置 SSL 证书
-- 启用安全头
-- 限制文件上传大小
+## 🤝 贡献指南
 
-### 3. 性能优化
-- 启用 Gzip 压缩
-- 配置静态资源缓存
-- 使用 CDN 加速
-- 监控服务器性能
+欢迎提交 Issue 和 Pull Request！
 
-### 4. 日志管理
-- 定期清理日志文件
-- 配置日志轮转
-- 监控错误日志
-- 设置日志告警
+1. Fork 本仓库
+2. 创建特性分支 (`git checkout -b feature/AmazingFeature`)
+3. 提交更改 (`git commit -m 'Add some AmazingFeature'`)
+4. 推送到分支 (`git push origin feature/AmazingFeature`)
+5. 开启 Pull Request
 
-## 许可证
+## 📄 许可证
 
-MIT License 
+本项目基于 MIT 许可证 - 查看 [LICENSE](LICENSE) 文件了解详情
+
+## 🙏 致谢
+
+- [Nginx](https://nginx.org/) - 高性能的 Web 服务器
+- [Docker](https://www.docker.com/) - 容器化平台
+- [Docker Compose](https://docs.docker.com/compose/) - 容器编排工具
+
+---
+
+**⭐ 如果这个项目对您有帮助，请给个星标支持！**
+
+*最后更新：2024-12-19* 
