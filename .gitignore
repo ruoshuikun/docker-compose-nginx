@@ -22,7 +22,7 @@ nginx/html/*
 nginx/static/*
 !nginx/static/.gitkeep
 
-# backup证书文件（敏感信息）
+# backup（备份的项目文件）
 nginx/backup/*
 !nginx/backup/.gitkeep
 
@@ -51,7 +51,7 @@ Thumbs.db
 
 # 备份文件
 *.bak
-*.backup
+# *.backup
 *.old
 
 # 压缩文件

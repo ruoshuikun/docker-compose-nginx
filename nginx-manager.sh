@@ -292,7 +292,7 @@ backup_project() {
         return
     fi
     
-    local backup_path="$BACKUP_DIR/$(date +%Y%m%d_%H%M%S)_$project_name"
+    local backup_path="$BACKUP_DIR/${project_name}_$(date +%Y%m%d_%H%M%S)"
     mkdir -p "$backup_path"
     cp -r "$target_dir"/* "$backup_path/"
     print_info "项目备份完成: $backup_path"
