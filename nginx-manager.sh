@@ -113,6 +113,7 @@ show_help() {
     echo ""
     echo "系统维护:"
     echo "  clean              清理系统（停止服务并删除容器）"
+    echo "  clean-temp [项目名] 清理临时部署目录"
     echo "  update             更新项目配置"
     echo "  health             健康检查"
     echo ""
@@ -121,6 +122,8 @@ show_help() {
     echo "  $0 deploy admin /path/to/admin  # 部署 admin 项目"
     echo "  $0 list                         # 查看所有项目"
     echo "  $0 shared upload /path/to/tiles tiles  # 上传地图瓦片"
+    echo "  $0 clean-temp web               # 清理 web 项目临时目录"
+    echo "  $0 clean-temp                   # 清理所有临时目录"
     echo "  $0 status                       # 查看服务状态"
 }
 
@@ -234,6 +237,9 @@ deploy_project() {
     
     # 重新加载 nginx 配置
     reload_config
+    
+    # 自动清理临时部署目录
+    cleanup_temp_deploy "$project_name"
 }
 
 # 列出所有项目
@@ -296,6 +302,31 @@ backup_project() {
     mkdir -p "$backup_path"
     cp -r "$target_dir"/* "$backup_path/"
     print_info "项目备份完成: $backup_path"
+}
+
+# 清理临时部署目录
+cleanup_temp_deploy() {
+    local project_name="$1"
+    local temp_dir="temp-deploy/$project_name"
+    
+    if [[ -d "$temp_dir" ]]; then
+        # 询问是否清理临时文件
+        read -p "是否清理临时部署目录 '$temp_dir'? (Y/n): " -n 1 -r
+        echo
+        if [[ $REPLY =~ ^[Nn]$ ]]; then
+            print_info "保留临时文件: $temp_dir"
+            return
+        fi
+        
+        rm -rf "$temp_dir"
+        print_info "已清理临时部署目录: $temp_dir"
+        
+        # 如果 temp-deploy 目录为空，也清理掉
+        if [[ -d "temp-deploy" ]] && [[ -z "$(ls -A temp-deploy 2>/dev/null | grep -v '\.gitkeep')" ]]; then
+            rm -rf temp-deploy
+            print_info "已清理空的临时部署目录"
+        fi
+    fi
 }
 
 # 管理共享静态资源
@@ -467,6 +498,38 @@ edit_config() {
     fi
 }
 
+# 清理临时部署目录
+clean_temp_deploy() {
+    local project_name="$1"
+    
+    if [[ -n "$project_name" ]]; then
+        # 清理特定项目的临时目录
+        local temp_dir="temp-deploy/$project_name"
+        if [[ -d "$temp_dir" ]]; then
+            rm -rf "$temp_dir"
+            print_success "已清理临时目录: $temp_dir"
+        else
+            print_warn "临时目录不存在: $temp_dir"
+        fi
+    else
+        # 清理所有临时目录
+        if [[ -d "temp-deploy" ]]; then
+            read -p "确定要清理所有临时部署目录吗? (y/N): " -n 1 -r
+            echo
+            if [[ $REPLY =~ ^[Yy]$ ]]; then
+                rm -rf temp-deploy
+                mkdir -p temp-deploy
+                touch temp-deploy/.gitkeep
+                print_success "已清理所有临时部署目录"
+            else
+                print_info "取消清理操作"
+            fi
+        else
+            print_warn "临时部署目录不存在"
+        fi
+    fi
+}
+
 # 清理系统
 clean_system() {
     print_step "清理系统..."
@@ -571,6 +634,9 @@ main() {
             ;;
         "clean")
             clean_system
+            ;;
+        "clean-temp")
+            clean_temp_deploy "$2"
             ;;
         "health")
             health_check

@@ -46,6 +46,7 @@ nginx-project-manager/
 │   ├── ssl/                 # 🔐 SSL证书目录
 │   └── logs/                # 📊 日志文件目录
 ├── backup/                  # 💾 项目备份目录
+├── temp-deploy/             # 🚀 临时部署目录（自动创建和清理）
 └── docs/                    # 📚 文档目录
     ├── 部署方式总览.md       # 📖 部署指南总览
     ├── nginx配置修改操作指南.md # 🔧 配置修改指南
@@ -130,6 +131,7 @@ curl http://localhost/web/
 ./nginx-manager.sh test       # 测试配置
 ./nginx-manager.sh edit       # 编辑配置
 ./nginx-manager.sh clean      # 清理系统
+./nginx-manager.sh clean-temp # 清理临时部署目录
 ```
 
 ## 🌐 远程部署
@@ -210,6 +212,46 @@ ssh root@prod-server.com 'cd /opt/nginx-project-manager && ./nginx-manager.sh de
 ssh root@prod-server.com 'cd /opt/nginx-project-manager && ./nginx-manager.sh deploy crm /tmp/crm-dist'
 ssh root@prod-server.com 'cd /opt/nginx-project-manager && ./nginx-manager.sh deploy oa /tmp/oa-dist'
 ```
+
+## 📁 目录说明
+
+### temp-deploy 临时部署目录
+
+`temp-deploy/` 目录用于临时存放部署文件，支持多项目并行部署：
+
+```bash
+# 目录结构示例
+temp-deploy/
+├── web/          # Web项目临时文件
+├── admin/        # 管理后台临时文件
+├── mobile/       # 移动端临时文件
+└── portal/       # 门户项目临时文件
+```
+
+#### 使用方式
+
+```bash
+# 方式一：直接指定临时目录
+./nginx-manager.sh deploy web temp-deploy/web
+
+# 方式二：使用默认临时目录（推荐）
+./nginx-manager.sh deploy web /path/to/dist
+# 脚本会自动将文件复制到 temp-deploy/web/ 然后部署
+
+# 方式三：多项目并行部署
+./nginx-manager.sh deploy web temp-deploy/web
+./nginx-manager.sh deploy admin temp-deploy/admin
+./nginx-manager.sh deploy mobile temp-deploy/mobile
+```
+
+#### 自动管理特性
+
+- ✅ **自动创建** - 部署时自动创建必要的目录结构
+- ✅ **自动清理** - 部署完成后询问是否清理临时文件
+- ✅ **手动清理** - 支持 `clean-temp` 命令手动清理
+- ✅ **并行支持** - 支持多个项目同时使用不同子目录
+- ✅ **版本隔离** - 每个项目使用独立的临时空间
+- ✅ **错误恢复** - 部署失败时保留临时文件便于排查
 
 ## 🔧 配置说明
 

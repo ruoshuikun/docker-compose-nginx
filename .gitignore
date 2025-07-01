@@ -26,6 +26,10 @@ nginx/static/*
 backup/*
 !backup/.gitkeep
 
+# 临时部署目录（保留目录结构，但忽略临时文件）
+temp-deploy/*
+!temp-deploy/.gitkeep
+
 # Docker相关
 .dockerignore
 docker-compose.override.yml.local
